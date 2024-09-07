@@ -38,19 +38,23 @@ public class AccountDAO {
     public Account login(Account account){
         Connection connection = ConnectionUtil.getConnection();
 
+        Account acc = new Account();
+
         try {
-            String sql = "SELECT username, account_id FROM account WHERE username = ? AND password = ?";
-            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            String sql = "SELECT username, account_id, password FROM account WHERE username = ? AND password = ?";
+            PreparedStatement preparedStatement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
 
             preparedStatement.setString(1, account.getUsername());
             preparedStatement.setString(2, account.getPassword());
 
-            preparedStatement.executeUpdate();
-
             ResultSet rs = preparedStatement.executeQuery();
-
+            
             if(rs.next()){
-                return account;
+                acc = new Account(rs.getInt("account_id"),
+                                    rs.getString("username"),
+                                    rs.getString("password"));
+                return acc;
+
             }
 
             
@@ -58,7 +62,7 @@ public class AccountDAO {
             System.out.println(e.getMessage());
         }
 
-        return null;
+        return acc;
         
     }
 }

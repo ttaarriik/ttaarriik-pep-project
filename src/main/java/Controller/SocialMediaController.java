@@ -11,6 +11,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * TODO: You will need to write your own endpoints and handlers for your controller. The endpoints you will need can be
@@ -26,6 +28,7 @@ public class SocialMediaController {
         this.accountService = new AccountService();
         this.messageService = new MessageService();
     }
+    
     /**
      * In order for the test cases to work, you will need to write the endpoints in the startAPI() method, as the test
      * suite must receive a Javalin object from this method.
@@ -41,8 +44,6 @@ public class SocialMediaController {
         app.delete("/messages/{message_id}", this::deleteMessageHandler);
         app.patch("/messages/{message_id}", this::updateMessageHandler);
         app.get("/accounts/{account_id}/messages", this::getAllMessagesByUserHandler);
-
-        app.start(8080);
         
 
         return app;
@@ -55,24 +56,27 @@ public class SocialMediaController {
     public void registerUserHandler(Context context) {
         Account account = context.bodyAsClass(Account.class);
 
-        boolean accountCreated = accountService.register(account);
+        Account accountCreated = accountService.register(account);
 
-        if(accountCreated){
-            context.json(account).status(200);
-        }else {
+        if(accountCreated.username == null){
             context.status(400);
+        }else {
+            context.json(accountCreated).status(200);
         }
     }
 
     public void loginUserHandler(Context context){
         Account account = context.bodyAsClass(Account.class);
 
-        boolean accountVerified = accountService.register(account);
+        Account accountVerified = accountService.login(account);
 
-        if(accountVerified){
-            context.json(account).status(200);
-        }else {
+        System.out.println("Acount created: " + accountVerified);
+
+        if(accountVerified.username == null){
             context.status(401);
+        
+        }else {
+            context.json(accountVerified).status(200);
         }
 
     }
@@ -80,10 +84,10 @@ public class SocialMediaController {
     public void createMessageHandler(Context context){
         Message message = context.bodyAsClass(Message.class);
 
-        boolean messageCreated = messageService.createMessage(message);
+        Message messageCreated = messageService.createMessage(message);
 
-        if(messageCreated){
-            context.json(message).status(200);
+        if(messageCreated.message_text != null){
+            context.json(messageCreated).status(200);
         }else {
             context.status(400);
         }
@@ -101,15 +105,24 @@ public class SocialMediaController {
     
         Message message = messageService.getMessage(id);
 
-        context.json(message).status(200);
+        if(message.message_text != null){
+            context.json(message).status(200);
+        }
+
+        
     }
 
     public void deleteMessageHandler(Context context){
         int id = Integer.parseInt(context.pathParam("message_id"));
 
-        Message message = messageService.deletMessage(id);
+        Message message = messageService.deleteMessage(id);
+        System.out.println("Delete : " + message);
 
-        context.json(message).status(200);
+        if(message.message_text != null){
+            context.json(message).status(200);
+        }
+
+        
     }
 
     public void updateMessageHandler(Context context){
@@ -119,7 +132,9 @@ public class SocialMediaController {
 
         Message updatedMessage = messageService.updateMessage(messageText, id);
 
-        if(updatedMessage == null){
+        System.out.println("Errors: " + updatedMessage);
+
+        if(updatedMessage.message_text == null){
             context.status(400);
         }else {
             context.json(updatedMessage).status(200);

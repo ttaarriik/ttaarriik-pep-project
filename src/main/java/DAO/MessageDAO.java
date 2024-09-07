@@ -10,6 +10,8 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import java.sql.*;
+
 
 public class MessageDAO {
 
@@ -19,17 +21,23 @@ public class MessageDAO {
         try {
 
             String sql = "INSERT INTO message (posted_by, message_text, time_posted_epoch) VALUES (?, ?, ?)";
-            PreparedStatement preparedStatement = connection.prepareStatement(sql);
-
+            PreparedStatement preparedStatement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+            
+            
             preparedStatement.setInt(1, message.getPosted_by());
             preparedStatement.setString(2, message.getMessage_text());
             preparedStatement.setLong(3, message.getTime_posted_epoch());
 
+            
+
             int affectedRows = preparedStatement.executeUpdate();
+            ResultSet pkeyResultSet = preparedStatement.getGeneratedKeys();
 
             if (affectedRows > 0) {
-                System.out.println("Message successfully created.");
-                return message;
+               
+                pkeyResultSet.next();
+                return new Message((int) pkeyResultSet.getLong(1), message.getPosted_by(),
+                                        message.getMessage_text(), message.getTime_posted_epoch());
             } else {
                 System.out.println("Message creation failed.");
                 return null;
@@ -90,7 +98,7 @@ public class MessageDAO {
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
-
+        System.out.println("here");
         return new Message();
 
     }
@@ -98,6 +106,7 @@ public class MessageDAO {
     public Message deleteMessage(int id){
 
         Connection connection = ConnectionUtil.getConnection();
+        Message retrivedMessage = this.getOneMessage(id);
 
         try {
             String sql = "DELETE FROM message WHERE message_id = ?";
@@ -107,11 +116,11 @@ public class MessageDAO {
             int affectedRows = preparedStatement.executeUpdate();
 
             if(affectedRows == 0){
+                System.out.println("A");
                 Message message = new Message();
                 return message;
             }else if(affectedRows == 1){
-                Message message = this.getOneMessage(id);
-                return message;
+                return retrivedMessage;
             }
 
         } catch (Exception e) {
@@ -140,14 +149,14 @@ public class MessageDAO {
                 return this.getOneMessage(id);
             } else {
                 System.out.println("Message creation failed.");
-                return null;
+                return new Message();
             }
             
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
 
-        return null;
+        return new Message();
     }
 
     public List<Message> getMessagesByUserId(int id){

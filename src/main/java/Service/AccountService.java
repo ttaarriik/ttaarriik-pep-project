@@ -12,27 +12,23 @@ public class AccountService {
         this.accountDAO = new AccountDAO();
     }
 
-    public boolean register(Account account){
+    public Account register(Account account){
 
         if(account.username.length() > 0 && account.password.length() > 4){
             Account createdAccount = accountDAO.createAccount(account);
             if(createdAccount != null){
-                return true;                    //Account was created
+                return createdAccount;                    //Account was created
             }
         }
-        return false;                           //Account was not created
-
+        
+        return new Account();
     }
 
-    public boolean login(Account account){
+    public Account login(Account account){
+        Account account2 = accountDAO.login(account);
+        System.out.println("Here : " + account2);
 
-        Account loggedinAccount = accountDAO.login(account);
-
-        if(loggedinAccount != null){
-            return true;                        //Account was logged in
-        }
-
-        return false;                           //Account was not logged in
+        return account2;
     }
     
 }

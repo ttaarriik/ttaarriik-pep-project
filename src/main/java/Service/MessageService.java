@@ -12,16 +12,16 @@ public class MessageService {
     }
 
 
-    public boolean createMessage(Message message){
+    public Message createMessage(Message message){
         if(message.message_text.length() > 0 && message.message_text.length() <= 255){
             Message createdMessage = messageDAO.createMessage(message);
 
             if(createdMessage != null){
-                return true;
+                return createdMessage;
             }
 
         }
-        return false;
+        return new Message();
     }
 
     public List<Message> getAllMessages(){
@@ -32,7 +32,7 @@ public class MessageService {
         return messageDAO.getOneMessage(id);
     }
 
-    public Message deletMessage(int id){
+    public Message deleteMessage(int id){
         return messageDAO.deleteMessage(id);
     }
 
