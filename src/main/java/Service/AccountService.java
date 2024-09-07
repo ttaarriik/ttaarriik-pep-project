@@ -26,7 +26,6 @@ public class AccountService {
 
     public Account login(Account account){
         Account account2 = accountDAO.login(account);
-        System.out.println("Here : " + account2);
 
         return account2;
     }
